@@ -21,7 +21,7 @@ package main
 import (
     "fmt"
     "log"
-    "github.com/dabumana/githubsec-go"
+    "githubsec"
 )
 
 func main() {
