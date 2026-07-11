@@ -1,4 +1,4 @@
-package github
+package githubsec
 
 import (
 	"encoding/json"
