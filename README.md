@@ -21,7 +21,7 @@ package main
 import (
     "fmt"
     "log"
-    "githubsec"
+    github "github.com/dabumana/githubsec-go"
 )
 
 func main() {
@@ -34,6 +34,7 @@ func main() {
         fmt.Printf("%s: %s (severity: %s)\n", adv.GHSAID, adv.Summary, adv.Severity)
     }
 }
+
 ```
 
 ## Authentication
