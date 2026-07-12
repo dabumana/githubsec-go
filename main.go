@@ -53,9 +53,9 @@ type GlobalAdvisory struct {
 	Description         string          `json:"description"`
 	Severity            string          `json:"severity"`
 	CVSS                *CVSS           `json:"cvss"`
-	CWEs                []string        `json:"cwes"`
+	CWEs                []CWE        `json:"cwes"`
 	Identifiers         []Identifier    `json:"identifiers"`
-	References          []Reference     `json:"references"`
+	References          []string     `json:"references"`
 	PublishedAt         time.Time       `json:"published_at"`
 	UpdatedAt           time.Time       `json:"updated_at"`
 	WithdrawnAt         *time.Time      `json:"withdrawn_at"`
@@ -70,6 +70,11 @@ type Repository struct {
 	URL      string `json:"url"`
 }
 
+type CWE struct {
+	ID   string `json:"cwe_id"`
+	Name string `json:"name"`
+}
+
 type CVSS struct {
 	VectorString string  `json:"vector_string"`
 	Score        float64 `json:"score"`
@@ -81,15 +86,10 @@ type Identifier struct {
 	Value string `json:"value"`
 }
 
-type Reference struct {
-	URL  string `json:"url"`
-	Type string `json:"type"`
-}
-
 type Vulnerability struct {
 	Package                Package      `json:"package"`
 	VulnerableVersionRange string       `json:"vulnerable_version_range"`
-	FirstPatchedVersion    *VersionInfo `json:"first_patched_version"`
+	FirstPatchedVersion    string `json:"first_patched_version"`
 }
 
 type Package struct {
@@ -107,7 +107,7 @@ type GlobalAdvisoryFilter struct {
 	Type        string
 	Ecosystem   string
 	Severity    string
-	CWEs        []string
+	CWEs        []CWE
 	IsWithdrawn *bool
 	Affects     []string
 	Published   string
@@ -133,9 +133,6 @@ func (c *Client) ListGlobalAdvisories(filter GlobalAdvisoryFilter) ([]GlobalAdvi
 	}
 	if filter.Severity != "" {
 		params.Set("severity", filter.Severity)
-	}
-	if len(filter.CWEs) > 0 {
-		params.Set("cwes", strings.Join(filter.CWEs, ","))
 	}
 	if filter.IsWithdrawn != nil {
 		params.Set("is_withdrawn", strconv.FormatBool(*filter.IsWithdrawn))

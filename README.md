@@ -96,7 +96,7 @@ The ListGlobalAdvisories method accepts a filter struct with the following optio
 |Type | string | Advisory type: "reviewed", "unreviewed", "malicious".|
 |Ecosystem | string | Package ecosystem: "npm", "maven", "go", etc.|
 |Severity | string | "critical", "high", "medium", "low".|
-|CWEs | []string | Filter by CWE IDs (e.g., ["CWE-79", "CWE-89"]).|
+|CWEs | []CWE | Filter by CWE IDs (e.g., ["CWE-79", "CWE-89"]).|
 |IsWithdrawn | *bool | Whether the advisory is withdrawn.|
 |Affects | []string | Package names to match (e.g., ["lodash", "express"]).|
 |Published | string | Date range in the format YYYY-MM-DD..YYYY-MM-DD.|
