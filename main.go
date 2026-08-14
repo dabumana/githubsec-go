@@ -23,6 +23,108 @@ type Client struct {
 
 type Option func(*Client)
 
+type GlobalAdvisory struct {
+	GHSAID                string          `json:"ghsa_id"`
+	CVEID                 *string         `json:"cve_id"`
+	URL                   string          `json:"url"`
+	HTMLURL               string          `json:"html_url"`
+	RepositoryAdvisoryURL *string         `json:"repository_advisory_url"`
+	Summary               string          `json:"summary"`
+	Description           string          `json:"description"`
+	Type                  string          `json:"type"`
+	Severity              string          `json:"severity"`
+	SourceCodeLocation    *string         `json:"source_code_location"`
+	Identifiers           []Identifier    `json:"identifiers"`
+	References            []string        `json:"references"`
+	PublishedAt           time.Time       `json:"published_at"`
+	UpdatedAt             time.Time       `json:"updated_at"`
+	GithubReviewedAt      *time.Time      `json:"github_reviewed_at"`
+	NvdPublishedAt        *time.Time      `json:"nvd_published_at"`
+	WithdrawnAt           *time.Time      `json:"withdrawn_at"`
+	Vulnerabilities       []Vulnerability `json:"vulnerabilities"`
+	CVSS                  *CVSS           `json:"cvss"`
+	CVSSSeverities        *CVSSSeverities `json:"cvss_severities"`
+	EPSS                  *EPSS           `json:"epss"`
+	CWEs                  []CWE           `json:"cwes"`
+	Credits               []Credit        `json:"credits"`
+}
+
+type Identifier struct {
+	Type  string `json:"type"`
+	Value string `json:"value"`
+}
+
+type CWE struct {
+	ID   string `json:"cwe_id"`
+	Name string `json:"name"`
+}
+
+type CVSS struct {
+	VectorString *string  `json:"vector_string"`
+	Score        *float64 `json:"score"`
+}
+
+type CVSSSeverities struct {
+	CvssV3 *CVSS `json:"cvss_v3"`
+	CvssV4 *CVSS `json:"cvss_v4"`
+}
+
+type EPSS struct {
+	Percentage float64 `json:"percentage"`
+	Percentile float64 `json:"percentile"`
+}
+
+type Vulnerability struct {
+	Package                Package  `json:"package"`
+	VulnerableVersionRange string   `json:"vulnerable_version_range"`
+	FirstPatchedVersion    *string  `json:"first_patched_version"`
+	VulnerableFunctions    []string `json:"vulnerable_functions"`
+}
+
+type Package struct {
+	Ecosystem string `json:"ecosystem"`
+	Name      string `json:"name"`
+}
+
+type Credit struct {
+	User *User  `json:"user"`
+	Type string `json:"type"`
+}
+
+type User struct {
+	Login        string `json:"login"`
+	ID           int64  `json:"id"`
+	NodeID       string `json:"node_id"`
+	AvatarURL    string `json:"avatar_url"`
+	URL          string `json:"url"`
+	HTMLURL      string `json:"html_url"`
+	Type         string `json:"type"`
+	SiteAdmin    bool   `json:"site_admin"`
+	UserViewType string `json:"user_view_type,omitempty"`
+}
+
+type GlobalAdvisoryFilter struct {
+	GHSAID         string
+	CVEID          string
+	Type           string
+	Ecosystem      string
+	Severity       string
+	CWEs           []CWE
+	IsWithdrawn    *bool
+	Affects        []string
+	Published      string
+	Updated        string
+	Modified       string
+	EPSSPercentage string
+	EPSSPercentile string
+	Before         string
+	After          string
+	Direction      string
+	Sort           string
+	PerPage        int
+	Page           int
+}
+
 func WithHTTPClient(c *http.Client) Option {
 	return func(cl *Client) { cl.httpClient = c }
 }
@@ -42,97 +144,26 @@ func NewClient(opts ...Option) *Client {
 	return c
 }
 
-type GlobalAdvisory struct {
-	ID                  string          `json:"id"`
-	GHSAID              string          `json:"ghsa_id"`
-	CVEID               string          `json:"cve_id"`
-	URL                 string          `json:"url"`
-	HTMLURL             string          `json:"html_url"`
-	Repository          *Repository     `json:"repository"`
-	Summary             string          `json:"summary"`
-	Description         string          `json:"description"`
-	Severity            string          `json:"severity"`
-	CVSS                *CVSS           `json:"cvss"`
-	CWEs                []CWE        `json:"cwes"`
-	Identifiers         []Identifier    `json:"identifiers"`
-	References          []string     `json:"references"`
-	PublishedAt         time.Time       `json:"published_at"`
-	UpdatedAt           time.Time       `json:"updated_at"`
-	WithdrawnAt         *time.Time      `json:"withdrawn_at"`
-	Vulnerabilities     []Vulnerability `json:"vulnerabilities"`
-	FirstPatchedVersion *VersionInfo    `json:"first_patched_version"`
-}
-
-type Repository struct {
-	ID       int    `json:"id"`
-	Name     string `json:"name"`
-	FullName string `json:"full_name"`
-	URL      string `json:"url"`
-}
-
-type CWE struct {
-	ID   string `json:"cwe_id"`
-	Name string `json:"name"`
-}
-
-type CVSS struct {
-	VectorString string  `json:"vector_string"`
-	Score        float64 `json:"score"`
-	Severity     string  `json:"severity"`
-}
-
-type Identifier struct {
-	Type  string `json:"type"`
-	Value string `json:"value"`
-}
-
-type Vulnerability struct {
-	Package                Package      `json:"package"`
-	VulnerableVersionRange string       `json:"vulnerable_version_range"`
-	FirstPatchedVersion    string `json:"first_patched_version"`
-}
-
-type Package struct {
-	Ecosystem string `json:"ecosystem"`
-	Name      string `json:"name"`
-}
-
-type VersionInfo struct {
-	Identifier string `json:"identifier"`
-}
-
-type GlobalAdvisoryFilter struct {
-	GHSAID      string
-	CVEID       string
-	Type        string
-	Ecosystem   string
-	Severity    string
-	CWEs        []CWE
-	IsWithdrawn *bool
-	Affects     []string
-	Published   string
-	Updated     string
-	PerPage     int
-	Page        int
-}
-
 func (c *Client) ListGlobalAdvisories(filter GlobalAdvisoryFilter) ([]GlobalAdvisory, error) {
 	params := url.Values{}
 
 	if filter.GHSAID != "" {
 		params.Set("ghsa_id", filter.GHSAID)
 	}
-	if filter.CVEID != "" {
-		params.Set("cve_id", filter.CVEID)
-	}
 	if filter.Type != "" {
 		params.Set("type", filter.Type)
+	}
+	if filter.CVEID != "" {
+		params.Set("cve_id", filter.CVEID)
 	}
 	if filter.Ecosystem != "" {
 		params.Set("ecosystem", filter.Ecosystem)
 	}
 	if filter.Severity != "" {
 		params.Set("severity", filter.Severity)
+	}
+	if len(filter.CWEs) > 0 {
+		params.Set("cwes", joinCWEs(filter.CWEs))
 	}
 	if filter.IsWithdrawn != nil {
 		params.Set("is_withdrawn", strconv.FormatBool(*filter.IsWithdrawn))
@@ -145,6 +176,27 @@ func (c *Client) ListGlobalAdvisories(filter GlobalAdvisoryFilter) ([]GlobalAdvi
 	}
 	if filter.Updated != "" {
 		params.Set("updated", filter.Updated)
+	}
+	if filter.Modified != "" {
+		params.Set("modified", filter.Modified)
+	}
+	if filter.EPSSPercentage != "" {
+		params.Set("epss_percentage", filter.EPSSPercentage)
+	}
+	if filter.EPSSPercentile != "" {
+		params.Set("epss_percentile", filter.EPSSPercentile)
+	}
+	if filter.Before != "" {
+		params.Set("before", filter.Before)
+	}
+	if filter.After != "" {
+		params.Set("after", filter.After)
+	}
+	if filter.Direction != "" {
+		params.Set("direction", filter.Direction)
+	}
+	if filter.Sort != "" {
+		params.Set("sort", filter.Sort)
 	}
 	if filter.PerPage > 0 {
 		params.Set("per_page", strconv.Itoa(filter.PerPage))
@@ -160,8 +212,20 @@ func (c *Client) ListGlobalAdvisories(filter GlobalAdvisoryFilter) ([]GlobalAdvi
 
 func (c *Client) GetGlobalAdvisory(ghsaID string) (*GlobalAdvisory, error) {
 	var result GlobalAdvisory
-	err := c.request("GET", "/advisories/"+ghsaID, nil, &result)
+	err := c.request("GET", "/advisories/"+url.PathEscape(ghsaID), nil, &result)
 	return &result, err
+}
+
+func joinCWEs(cwes []CWE) string {
+	ids := make([]string, 0, len(cwes))
+	for _, cwe := range cwes {
+		id := strings.TrimSpace(cwe.ID)
+		id = strings.TrimPrefix(strings.ToUpper(id), "CWE-")
+		if id != "" {
+			ids = append(ids, id)
+		}
+	}
+	return strings.Join(ids, ",")
 }
 
 func (c *Client) request(method, path string, params url.Values, result interface{}) error {
